@@ -1,93 +1,102 @@
 #include <iostream>
 #include <cmath>
+#include <valarray>
 #include <boost/numeric/odeint.hpp>
 
-
-#include "../smfl/Sol.cpp"
-#include "../smfl/Mercury.cpp"
-
+using namespace std;
 using namespace boost::numeric::odeint;
 
 struct Sol {
-    double masa;
+    std::valarray<double> R; // Posiciones
+    std::valarray<double> V; // Velocidades
+    std::valarray<double> F; // Fuerzas
+    const double mass = 1.989e30; // kg
+
+    Sol() : R(2), V(2), F(2) {}
 };
 
-struct Mercurio {
-    double masa;
-    double x, y; // Posición
-    double vx, vy; // Velocidad
+struct Mercury {
+    std::valarray<double> R; // Posiciones
+    std::valarray<double> V; // Velocidades
+    std::valarray<double> F; // Fuerzas
+    const double mass = 3.285e23; // kg
+    const double radius = 2439.7; // km de radio
+
+    Mercury() : R(2), V(2), F(2) {}
 };
 
-// Definición de las ecuaciones de movimiento
-void movimiento(const std::vector<double>& x, std::vector<double>& dxdt, double t)
+void init_system(Sol& mysol, Mercury& mymercury)
+{
+    mysol.R = {0, 0};   // Posicion del sol en X y Y
+    mysol.V = {0, 0};   // Velocidad y del Sol en X y Y
+
+    mymercury.R = {0.387 * 1.496e11, 0}; // Posición X y Y de Mercurio (distancia en UA convertida a metros)
+    mymercury.V = {0, 47870.0};          // Velocidad X y Y de Mercurio (en metros por segundo)
+}
+
+void compute_forces(Sol& mysol, Mercury& mymercury)
 {
     const double G = 6.67430e-11; // Constante de gravitación universal
 
-    // Descomposición de las variables
-    double x_sol = x[0];
-    double y_sol = x[1];
-    double vx_sol = x[2];
-    double vy_sol = x[3];
-    double x_mercurio = x[4];
-    double y_mercurio = x[5];
-    double vx_mercurio = x[6];
-    double vy_mercurio = x[7];
+    // x_mercurio          // x_sol
+    double dx_sol = mymercury.R[0] - mysol.R[0];
 
-    // Cálculo de las fuerzas gravitacionales
-    double dx_sol = x_mercurio - x_sol;
-    double dy_sol = y_mercurio - y_sol;
+    // y_mercurio          // y_sol
+    double dy_sol = mymercury.R[1] - mysol.R[1];
     double r_sol = sqrt(dx_sol * dx_sol + dy_sol * dy_sol);
-    double Fx_sol = G * x[8].masa * x[9].masa * dx_sol / (r_sol * r_sol * r_sol);
-    double Fy_sol = G * x[8].masa * x[9].masa * dy_sol / (r_sol * r_sol * r_sol);
-    double Fx_mercurio = -Fx_sol;
-    double Fy_mercurio = -Fy_sol;
 
-    // Actualización de las derivadas
-    dxdt[0] = vx_sol;
-    dxdt[1] = vy_sol;
-    dxdt[2] = Fx_sol / x[8].masa;
-    dxdt[3] = Fy_sol / x[8].masa;
-    dxdt[4] = vx_mercurio;
-    dxdt[5] = vy_mercurio;
-    dxdt[6] = Fx_mercurio / x[9].masa;
-    dxdt[7] = Fy_mercurio / x[9].masa;
+    mysol.F[0] = G * mymercury.mass * mysol.mass * dx_sol / (r_sol * r_sol * r_sol);
+    mysol.F[1] = G * mymercury.mass * mysol.mass * dy_sol / (r_sol * r_sol * r_sol);
+
+    mymercury.F[0] = -mysol.F[0]; //-Fx_sol ;
+    mymercury.F[1] = -mysol.F[1]; //-Fy_sol;
 }
 
+
+/*// Definición de las ecuaciones de movimiento
+void movimiento(const std::valarray<double>& x, std::valarray<double>& dxdt, double t,Sol &mysol,Mercury &mymercury)
+{
+
+    compute_forces(mysol, mymercury);
+
+    // Actualización de las derivadas
+    dxdt[0] = mysol.V[0];
+    dxdt[1] = mysol.V[1];
+    dxdt[2] = mysol.F[0] / mysol.mass;
+    dxdt[3] = mysol.F[1] / mysol.mass;
+    dxdt[4] = mymercury.V[0];
+    dxdt[5] = mymercury.V[1];
+    dxdt[6] = mymercury.F[0] / mymercury.mass;
+    dxdt[7] = mymercury.F[1] / mymercury.mass;
+}
+*/
 int main()
 {
-    const double dt = 3600.0; // Paso de tiempo (en segundos)
-    const double tmax = 365.25 * 24 * 3600; // Tiempo total de la simulación (en segundos)
+    const double dt = 3600.0;                              // Paso de tiempo (en segundos)
+    const double tmax = 365.25 * 24 * 3600;                 // Tiempo total de la simulación (en segundos)
 
-    std::vector<double> x(10); // Vector de variables: [x_sol, y_sol, vx_sol, vy_sol, x_mercurio, y_mercurio, vx_mercurio, vy_mercurio]
-
-    // Condiciones iniciales
-    x[0] = 0.0;  // Posición x del Sol
-    x[1] = 0.0;  // Posición y del Sol
-    x[2] = 0.0;  // Velocidad x del Sol
-    x[3] = 0.0;  // Velocidad y del Sol
-
-    x[4] = 0.387 * 1.496e11;  // Posición x de Mercurio (distancia en UA convertida a metros)
-    x[5] = 0.0;               // Posición y de Mercurio
-    x[6] = 0.0;               // Velocidad x de Mercurio
-    x[7] = 47870.0;           // Velocidad y de Mercurio (en metros por segundo)
-
-    // Definición de las masas del Sol y Mercurio
     Sol sol;
-    sol.masa = 1.989e30;
-    Mercurio mercurio;
-    mercurio.masa = 3.285e23;
+    Mercury mercury;
 
-    // Asignación de los objetos Sol y Mercurio al vector x
-    x[8] = sol;
-    x[9] = mercurio;
+    // Initialize the sol and mercury 
+    init_system(sol, mercury);
+
+    // compute the initial forces
+    compute_forces(sol, mercury);
+    
+    //print states 
+
+    //time loopp
+    //compute neew positions and velocities -integration
+    //compute new forces 
+    //print states
 
     // Definición del integrador de Euler
-    typedef runge_kutta4<std::vector<double>> stepper;
-    integrate_const(stepper(), movimiento, x, 0.0, tmax, dt);
+    typedef runge_kutta4<std::valarray<double>> stepper;
+    double t = 0.0; // Tiempo inicial
 
-    // Impresión de los resultados
-    std::cout << "Tiempo: " << tmax / 24 / 3600 << " días" << std::endl;
-    std::cout << "Posición final de Mercurio: (" << x[4] / 1.496e11 << ", " << x[5] / 1.496e11 << ") UA" << endl;
-
+    for(int i = 0; i < 2; i++){
+        std::cout << sol.R[i]<<"\t"<<sol.V[i]<<"\t"<<sol.F[i]<<"\n";
+    }
     return 0;
 }
