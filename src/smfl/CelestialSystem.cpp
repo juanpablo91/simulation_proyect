@@ -2,18 +2,15 @@
 #include <SFML/Graphics.hpp>
 #include <iostream>
 
-#include "./Sol.cpp"
-#include "./Mercury.cpp"
-
 class CelestialSystem
 {
     private:
-        Sol sol;
+
         sf::CircleShape * solShape;
 
         sf::Vector2f velocityMercury;
         double acceleration;
-        Mercury mercury;
+
         sf::CircleShape * mercuryShape;
         
 
@@ -29,21 +26,21 @@ class CelestialSystem
         void loop();
         void processEvent();
         void _draw();
+        void position(double x, double y);
 
 };
 
 CelestialSystem::CelestialSystem()
 {   
     
-    sol.circle = new sf::CircleShape(32);
-    sol.circle->setFillColor(sf::Color::Yellow);
-    sol.circle->setPosition(200,200);
+    solShape = new sf::CircleShape(35);
+    solShape->setFillColor(sf::Color::Yellow);
+    solShape->setPosition(200,200);
 
-    mercury.circle = new sf::CircleShape(32);
-    mercury.circle->setFillColor(sf::Color::Yellow);
-    mercury.circle->setPosition(200,200);
+    mercuryShape = new sf::CircleShape(15);
+    mercuryShape->setFillColor(sf::Color::Blue);
+    position(0, 0);;
 
-    //solShape = sol.circle;
 
     width = 800;
     width = 600; 
@@ -94,8 +91,14 @@ void CelestialSystem::_draw()
 {
     window->clear();
 
-    window->draw(*sol.circle);//Dibujar el Sol
+    window->draw(*solShape);//Dibujar el Sol
     window->draw(*mercuryShape);//Dibujar el Sol
 
     window->display();
+}
+
+
+void CelestialSystem::position(double x, double y){
+    mercuryShape->setPosition(x,y);
+    std::cout << x << " " << y << std::endl;
 }
