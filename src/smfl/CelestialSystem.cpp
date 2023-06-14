@@ -1,19 +1,25 @@
 #pragma once
-#include <SFML/Graphics.hpp>
+
 #include <iostream>
+#include "Button.cpp"
 
 class CelestialSystem
 {
     private:
 
+        //bodys
         sf::CircleShape * solShape;
 
+        sf::CircleShape * mercuryShape;
         sf::Vector2f velocityMercury;
         double acceleration;
-
-        sf::CircleShape * mercuryShape;
         
 
+        //buttons
+        Button * buttonSol;
+        Button * buttonMercury;
+
+        //window
         sf::RenderWindow * window;
         int width;
         int height;
@@ -32,21 +38,35 @@ class CelestialSystem
 
 CelestialSystem::CelestialSystem()
 {   
-    
+    sf::Font font;
+    if (!font.loadFromFile("arial.ttf")) // Ruta de la fuente de texto
+    {
+    // Manejo de errores si la fuente no se pudo cargar
+    }
+
+    //buttons
+    buttonSol = new Button(100,100,&font,"S",
+    sf::Color::Yellow,sf::Color::Black,sf::Color::Green);
+
+    buttonMercury = new Button(100,100,&font,"S",
+    sf::Color::Yellow,sf::Color::Black,sf::Color::Green);
+
+    //bodys maker
     solShape = new sf::CircleShape(35);
     solShape->setFillColor(sf::Color::Yellow);
     solShape->setPosition(200,200);
 
     mercuryShape = new sf::CircleShape(15);
     mercuryShape->setFillColor(sf::Color::Blue);
-    position(0, 0);;
+    position(0, 0);
 
-
+    //window specks
     width = 800;
     width = 600; 
     height = 600;
     title = "Simulacion Sol-Mercurio";
 
+    //window 
     window = new sf::RenderWindow(sf::VideoMode(width,height),title);
     fps = 60;
     window->setFramerateLimit(fps);
@@ -55,7 +75,7 @@ CelestialSystem::CelestialSystem()
     loop();
     std::cout << "Finished." << std::endl;
 
-};
+}
 
 
 void CelestialSystem::loop()

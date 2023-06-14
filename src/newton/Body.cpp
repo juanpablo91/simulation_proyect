@@ -5,10 +5,13 @@ struct Body {
     std::valarray<double> R; // Posiciones
     std::valarray<double> V; // Velocidades
     std::valarray<double> F; // Fuerzas
-    const double massMercury = 1.0; // unidad de masa mercurio
-    const double massSol = 6.05e6; // 
+    double mass;  // 
 
-    Body() : R(2), V(2), F(2){};
+    Body(){
+		R = {0, 0}; V = {0, 0}; F = {0, 0};
+        mass = 0.0;
+        
+    };
 
     //Grafic
     sf::CircleShape * circle;

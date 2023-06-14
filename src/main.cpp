@@ -1,15 +1,14 @@
 //Este es el principal archivo, donde se uniran las tres partes fundamentales del progra
 #include <SFML/Graphics.hpp>
-#include "./smfl/CelestialSystem.cpp"
+#include "./newton/simulator.cpp"
 #include <string>
 #include <valarray>
 
 int main(int argc,char **argv){
 
-
-    CelestialSystem * system1;
-
-    system1 = new CelestialSystem();
+    const int N = 2;
+    std::vector<Body> body(N);
+    compute(body);
 
     return 0;
 }
