@@ -1,4 +1,7 @@
-#include "Body.h"
+#pragma once
+
+#include <SFML/Graphics.hpp>
+#include <valarray>
 
 struct Body {
 

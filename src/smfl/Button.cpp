@@ -25,6 +25,7 @@ private:
 
 
 public:
+
     Button(double x, double y,
         sf::Font * font,std::string text,sf::Color idlecolor,
         sf::Color hoverColor,sf::Color activeColor);
@@ -33,6 +34,8 @@ public:
     //Funtions
     void render(sf::RenderTarget * target);
     void update(const sf::Vector2f mousePos);
+    void drawto(sf::RenderWindow * window);
+    sf::RectangleShape getshape();
     const bool isPress() const;
 };
 
@@ -42,7 +45,7 @@ Button::Button(double x, double y, sf::Font * font,std::string text,sf::Color id
     this->buttonState = BTN_idle;
 
     this->shape.setPosition(sf::Vector2f(x, y));
-    this->shape.setSize(sf::Vector2f(100, 100));
+    this->shape.setSize(sf::Vector2f(70, 30));
 
     this->font= font;
     this->text.setFont(*this->font);
@@ -67,7 +70,8 @@ Button::~Button()
 }
 
 const bool Button::isPress() const
-{
+
+{   std::cout << "Button::isPress" << std::endl;
     if(this->buttonState == BTN_Active) return true;
     return false;
 }
@@ -110,6 +114,13 @@ void Button::update(const sf::Vector2f mousePos)
 
 
 }
+
+void Button::drawto(sf::RenderWindow * window){
+    window->draw(this->shape);
+    window->draw(this->text);
+};
+
+
 
 
 #endif 
